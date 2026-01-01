@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estacionamento Praia - Sistema de Controle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .emoji {
+            font-size: 3rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-box.disponivel {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .stat-box.ocupadas {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .stat-box h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-box p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .veiculos-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .veiculo-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .veiculo-info {
+            flex: 1;
+        }
+
+        .veiculo-placa {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .veiculo-detalhes {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .veiculo-tempo {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .btn-small {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            width: auto;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .valor-total {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #11998e;
+            margin: 20px 0;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .config-section {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .config-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state .emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="emoji">🏖️ 🚗</div>
+            <h1>Estacionamento Praia</h1>
+            <p>Sistema de Controle Inteligente</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-box disponivel">
+                <h3 id="vagasDisponiveis">50</h3>
+                <p>Vagas Disponíveis</p>
+            </div>
+            <div class="stat-box ocupadas">
+                <h3 id="vagasOcupadas">0</h3>
+                <p>Vagas Ocupadas</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('entrada')">🚗 Entrada</button>
+                <button class="tab" onclick="switchTab('saida')">💰 Saída</button>
+                <button class="tab" onclick="switchTab('config')">⚙️ Config</button>
+            </div>
+
+            <!-- Entrada Tab -->
+            <div id="entradaTab" class="tab-content active">
+                <form id="formEntrada" onsubmit="registrarEntrada(event)">
+                    <div class="form-group">
+                        <label>🚗 Placa do Veículo</label>
+                        <input type="text" id="placaEntrada" placeholder="ABC-1234" required 
+                               pattern="[A-Za-z]{3}-?[0-9]{4}" maxlength="8">
+                    </div>
+                    <div class="form-group">
+                        <label>🚙 Tipo de Veículo</label>
+                        <select id="tipoVeiculo">
+                            <option value="carro">Carro</option>
+                            <option value="moto">Moto</option>
+                            <option value="van">Van/SUV</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">✅ Registrar Entrada</button>
+                </form>
+            </div>
+
+            <!-- Saída Tab -->
+            <div id="saidaTab" class="tab-content">
+                <div class="form-group">
+                    <label>🔍 Buscar Veículo</label>
+                    <input type="text" id="buscaPlaca" placeholder="Digite a placa..." 
+                           oninput="filtrarVeiculos(this.value)">
+                </div>
+                
+                <div id="listaVeiculos" class="veiculos-list">
+                    <div class="empty-state">
+                        <div class="emoji">🚫</div>
+                        <p>Nenhum veículo no estacionamento</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Config Tab -->
+            <div id="configTab" class="tab-content">
+                <div class="config-section">
+                    <h3>💰 Valores</h3>
+                    <div class="form-group">
+                        <label>Primeira Hora (R$)</label>
+                        <input type="number" id="valorPrimeiraHora" value="15" step="0.5" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Hora Adicional (R$)</label>
+                        <input type="number" id="valorHoraAdicional" value="10" step="0.5" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor Diária (R$)</label>
+                        <input type="number" id="valorDiaria" value="50" step="0.5" min="0">
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>🅿️ Capacidade</h3>
+                    <div class="form-group">
+                        <label>Total de Vagas</label>
+                        <input type="number" id="totalVagas" value="50" min="1">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar Configurações</button>
+                <button class="btn btn-danger" onclick="limparDados()">🗑️ Limpar Todos os Dados</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Pagamento -->
+    <div id="modalPagamento" class="modal">
+        <div class="modal-content">
+            <h2>💰 Pagamento</h2>
+            <div id="detalhesCobranca"></div>
+            <button class="btn btn-success" onclick="confirmarSaida()">✅ Confirmar Saída</button>
+            <button class="btn btn-primary" onclick="fecharModal()">❌ Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        // Dados do sistema
+        let veiculos = JSON.parse(localStorage.getItem('veiculos')) || [];
+        let config = JSON.parse(localStorage.getItem('config')) || {
+            totalVagas: 50,
+            valorPrimeiraHora: 15,
+            valorHoraAdicional: 10,
+            valorDiaria: 50
+        };
+
+        let veiculoSaida = null;
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarConfig();
+            atualizarStats();
+            renderizarVeiculos();
+        });
+
+        function switchTab(tab) {
+            // Atualizar botões
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            // Ativar tab selecionada
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            if (tab === 'saida') {
+                renderizarVeiculos();
+            }
+        }
+
+        function registrarEntrada(event) {
+            event.preventDefault();
+            
+            const placa = document.getElementById('placaEntrada').value.toUpperCase().replace('-', '');
+            const tipo = document.getElementById('tipoVeiculo').value;
+            
+            // Verificar se já existe
+            if (veiculos.find(v => v.placa === placa)) {
+                alert('⚠️ Este veículo já está no estacionamento!');
+                return;
+            }
+            
+            // Verificar vagas disponíveis
+            if (veiculos.length >= config.totalVagas) {
+                alert('⚠️ Estacionamento lotado!');
+                return;
+            }
+            
+            // Registrar entrada
+            const veiculo = {
+                placa: placa,
+                tipo: tipo,
+                entrada: new Date().toISOString()
+            };
+            
+            veiculos.push(veiculo);
+            salvarDados();
+            
+            document.getElementById('formEntrada').reset();
+            atualizarStats();
+            
+            alert(`✅ Entrada registrada!\nPlaca: ${formatarPlaca(placa)}\nHorário: ${formatarHora(veiculo.entrada)}`);
+        }
+
+        function renderizarVeiculos() {
+            const lista = document.getElementById('listaVeiculos');
+            
+            if (veiculos.length === 0) {
+                lista.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">🚫</div>
+                        <p>Nenhum veículo no estacionamento</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            lista.innerHTML = veiculos.map(v => {
+                const tempo = calcularTempo(v.entrada);
+                const valor = calcularValor(v.entrada);
+                
+                return `
+                    <div class="veiculo-item">
+                        <div class="veiculo-info">
+                            <div class="veiculo-placa">${formatarPlaca(v.placa)}</div>
+                            <div class="veiculo-detalhes">
+                                ${getTipoEmoji(v.tipo)} ${v.tipo.toUpperCase()} | 
+                                Entrada: ${formatarHora(v.entrada)}
+                            </div>
+                            <div class="veiculo-tempo">⏱️ ${tempo} | R$ ${valor.toFixed(2)}</div>
+                        </div>
+                        <button class="btn btn-danger btn-small" onclick="abrirModalSaida('${v.placa}')">
+                            Saída →
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filtrarVeiculos(busca) {
+            const lista = document.getElementById('listaVeiculos');
+            const items = lista.querySelectorAll('.veiculo-item');
+            
+            items.forEach(item => {
+                const placa = item.querySelector('.veiculo-placa').textContent;
+                if (placa.includes(busca.toUpperCase())) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function abrirModalSaida(placa) {
+            veiculoSaida = veiculos.find(v => v.placa === placa);
+            if (!veiculoSaida) return;
+            
+            const tempo = calcularTempo(veiculoSaida.entrada);
+            const valor = calcularValor(veiculoSaida.entrada);
+            const horas = calcularHoras(veiculoSaida.entrada);
+            
+            document.getElementById('detalhesCobranca').innerHTML = `
+                <p style="font-size: 1.1rem; color: #666; margin-bottom: 10px;">
+                    <strong>Placa:</strong> ${formatarPlaca(veiculoSaida.placa)}
+                </p>
+                <p style="color: #666; margin-bottom: 10px;">
+                    <strong>Entrada:</strong> ${formatarHora(veiculoSaida.entrada)}
+                </p>
+                <p style="color: #666; margin-bottom: 20px;">
+                    <strong>Permanência:</strong> ${tempo} (${horas.toFixed(1)}h)
+                </p>
+                <div class="valor-total">R$ ${valor.toFixed(2)}</div>
+            `;
+            
+            document.getElementById('modalPagamento').classList.add('active');
+        }
+
+        function confirmarSaida() {
+            if (!veiculoSaida) return;
+            
+            veiculos = veiculos.filter(v => v.placa !== veiculoSaida.placa);
+            salvarDados();
+            
+            fecharModal();
+            renderizarVeiculos();
+            atualizarStats();
+            
+            alert('✅ Saída registrada com sucesso!');
+            veiculoSaida = null;
+        }
+
+        function fecharModal() {
+            document.getElementById('modalPagamento').classList.remove('active');
+            veiculoSaida = null;
+        }
+
+        function calcularTempo(entrada) {
+            const inicio = new Date(entrada);
+            const agora = new Date();
+            const diff = agora - inicio;
+            
+            const horas = Math.floor(diff / 3600000);
+            const minutos = Math.floor((diff % 3600000) / 60000);
+            
+            if (horas === 0) {
+                return `${minutos}min`;
+            }
+            return `${horas}h ${minutos}min`;
+        }
+
+        function calcularHoras(entrada) {
+            const inicio = new Date(entrada);
+            const agora = new Date();
+            const diff = agora - inicio;
+            return diff / 3600000;
+        }
+
+        function calcularValor(entrada) {
+            const horas = calcularHoras(entrada);
+            
+            // Se passar de 8 horas, cobra diária
+            if (horas >= 8) {
+                return config.valorDiaria;
+            }
+            
+            // Primeira hora
+            if (horas <= 1) {
+                return config.valorPrimeiraHora;
+            }
+            
+            // Horas adicionais
+            const horasAdicionais = Math.ceil(horas - 1);
+            return config.valorPrimeiraHora + (horasAdicionais * config.valorHoraAdicional);
+        }
+
+        function formatarPlaca(placa) {
+            if (placa.length === 7) {
+                return `${placa.slice(0, 3)}-${placa.slice(3)}`;
+            }
+            return placa;
+        }
+
+        function formatarHora(dataStr) {
+            const data = new Date(dataStr);
+            return data.toLocaleString('pt-BR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+
+        function getTipoEmoji(tipo) {
+            const emojis = {
+                'carro': '🚗',
+                'moto': '🏍️',
+                'van': '🚙'
+            };
+            return emojis[tipo] || '🚗';
+        }
+
+        function atualizarStats() {
+            const ocupadas = veiculos.length;
+            const disponiveis = config.totalVagas - ocupadas;
+            
+            document.getElementById('vagasOcupadas').textContent = ocupadas;
+            document.getElementById('vagasDisponiveis').textContent = disponiveis;
+        }
+
+        function carregarConfig() {
+            document.getElementById('totalVagas').value = config.totalVagas;
+            document.getElementById('valorPrimeiraHora').value = config.valorPrimeiraHora;
+            document.getElementById('valorHoraAdicional').value = config.valorHoraAdicional;
+            document.getElementById('valorDiaria').value = config.valorDiaria;
+        }
+
+        function salvarConfig() {
+            config.totalVagas = parseInt(document.getElementById('totalVagas').value);
+            config.valorPrimeiraHora = parseFloat(document.getElementById('valorPrimeiraHora').value);
+            config.valorHoraAdicional = parseFloat(document.getElementById('valorHoraAdicional').value);
+            config.valorDiaria = parseFloat(document.getElementById('valorDiaria').value);
+            
+            localStorage.setItem('config', JSON.stringify(config));
+            atualizarStats();
+            
+            alert('✅ Configurações salvas com sucesso!');
+        }
+
+        function salvarDados() {
+            localStorage.setItem('veiculos', JSON.stringify(veiculos));
+        }
+
+        function limparDados() {
+            if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados?\n\nIsso irá remover todos os veículos registrados!')) {
+                veiculos = [];
+                salvarDados();
+                renderizarVeiculos();
+                atualizarStats();
+                alert('✅ Dados limpos com sucesso!');
+            }
+        }
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modalPagamento').addEventListener('click', (e) => {
+            if (e.target.id === 'modalPagamento') {
+                fecharModal();
+            }
+        });
+    </script>
+</body>
+</html>
